@@ -11,6 +11,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// test with science
+
 app.UseHttpsRedirection();
 
 
