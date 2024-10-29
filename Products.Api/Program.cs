@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Products.Api.DAL;
 using Products.Api.Endpoints;
+using Products.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddDbContext<DataContext>(x =>
     x.UseNpgsql(builder.Configuration["Postgres:ConnectionString"]);
 });
 
+builder.Services.AddScoped<CategoryService>();
 
 var app = builder.Build();
 
@@ -23,7 +25,7 @@ if (app.Environment.IsDevelopment())
 app.MapCategoryEndpoints();
 
 app.UseHttpsRedirection();
-
+app.Run();
 
 
 
