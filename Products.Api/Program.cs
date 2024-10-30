@@ -13,6 +13,7 @@ builder.Services.AddDbContext<DataContext>(x =>
 });
 
 builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<ProductService>();
 
 var app = builder.Build();
 
