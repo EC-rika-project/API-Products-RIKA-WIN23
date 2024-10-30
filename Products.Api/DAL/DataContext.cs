@@ -14,9 +14,9 @@ public class DataContext(DbContextOptions<DataContext> opts) : DbContext(opts)
     {
         modelBuilder.Entity<CategoryEntity>().HasKey(x => x.Name);
         
-        modelBuilder.Entity<ProductGroupEntity>()
+        modelBuilder.Entity<ProductEntity>()
             .HasOne<CategoryEntity>(x => x.Category)
-            .WithMany(x => x.ProductGroups)
+            .WithMany(x => x.Products)
             .HasForeignKey(x => x.CategoryName);
         
      
