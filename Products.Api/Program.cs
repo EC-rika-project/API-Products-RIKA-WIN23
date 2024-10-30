@@ -24,6 +24,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapCategoryEndpoints();
+app.MapProductEndpoints();
 
 app.UseHttpsRedirection();
 app.Run();
