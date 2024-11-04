@@ -27,7 +27,16 @@ builder.Services.AddDbContext<DataContext>( x =>
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<ProductService>();
 
+
+
 var app = builder.Build();
+
+// Anropa automatiska migrations
+using (var scope = app.Services.CreateScope())
+{
+    var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+    dataContext.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {
