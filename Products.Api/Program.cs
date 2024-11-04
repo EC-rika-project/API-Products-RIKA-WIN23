@@ -18,15 +18,9 @@ builder.Services.AddDbContext<DataContext>( x =>
     }
     else
     {
-        var vUri = builder.Configuration["Vault:Uri"] ?? throw new ApplicationException("We are live and the vault URI is missing");
-        var client = new SecretClient(new Uri(vUri), new DefaultAzureCredential());
-        var secretName = builder.Configuration["Vault:PostgresSecret"] ?? throw new ApplicationException("We are live and the vault postgres whatever is missing");
-        var secret = client.GetSecretAsync(secretName).GetAwaiter().GetResult();
-        if (!secret.HasValue)
-        {
-            throw new ApplicationException("We are live and the secret for our db is missing");
-        }
-        x.UseNpgsql(secret.Value.Value);
+
+        var connectionString = Environment.GetEnvironmentVariable("POSTGRES_LIVE_STRING");
+        x.UseNpgsql(connectionString);
     }
 });
 
