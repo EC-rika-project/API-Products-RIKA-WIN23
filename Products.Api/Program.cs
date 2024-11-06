@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<DataContext>( x =>
+builder.Services.AddDbContext<DataContext>(x =>
 {
     if (builder.Environment.IsDevelopment())
     {
@@ -18,7 +18,6 @@ builder.Services.AddDbContext<DataContext>( x =>
     }
     else
     {
-
         var connectionString = Environment.GetEnvironmentVariable("POSTGRES_LIVE_STRING");
         x.UseNpgsql(connectionString);
     }
@@ -26,7 +25,13 @@ builder.Services.AddDbContext<DataContext>( x =>
 
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<ProductService>();
-
+builder.Services.AddCors(x => { x.AddPolicy("localhostwebapp", p =>
+    {
+        p.AllowCredentials();
+        p.AllowAnyHeader();
+        p.WithOrigins("https://localhost:7278", "http://localhost:5229");
+    }); 
+});
 
 
 var app = builder.Build();
@@ -43,7 +48,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("localhostwebapp");
 app.MapCategoryEndpoints();
 app.MapProductEndpoints();
 
