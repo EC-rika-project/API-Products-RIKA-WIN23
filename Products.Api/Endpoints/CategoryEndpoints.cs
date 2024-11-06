@@ -24,6 +24,16 @@ public static class CategoryEndpoints
             }
             return Results.BadRequest(result.ErrorMessage);
         });
+
+        builder.MapDelete("/categories/{categoryName}", async (string categoryName, CategoryService categoryService) =>
+        {
+            var result = await categoryService.DeleteCategoryAsync(categoryName);
+            if (result.IsSuccess)
+            {
+                return Results.Ok();
+            }
+            return Results.BadRequest(result.ErrorMessage);
+        });
         
         return builder;
     }
