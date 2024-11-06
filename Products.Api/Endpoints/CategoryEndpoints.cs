@@ -1,3 +1,4 @@
+using Products.Api.Models.Requests;
 using Products.Api.Services;
 
 namespace Products.Api.Endpoints;
@@ -13,6 +14,17 @@ public static class CategoryEndpoints
             return Results.Ok(result.Data);
         });
 
+        builder.MapPost("/categories", async (CategoryRequest categoryRequest, CategoryService categoryService) =>
+        {
+            
+            var result = await categoryService.CreateCategoryAsync(categoryRequest);
+            if (result.IsSuccess)
+            {
+                return Results.Created($"/categories/{result.Data.Name}", result.Data);
+            }
+            return Results.BadRequest(result.ErrorMessage);
+        });
+        
         return builder;
     }
 }
