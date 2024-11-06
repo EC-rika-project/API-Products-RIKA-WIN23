@@ -20,7 +20,7 @@ public class CategoryService(DataContext dataContext)
 
     public async Task<ServiceResult<Category>> CreateCategoryAsync(CategoryRequest categoryRequest)
     {
-        if (await dataContext.Categories.AnyAsync(x => x.Name.Equals(categoryRequest.Name, StringComparison.CurrentCultureIgnoreCase)))
+        if (await dataContext.Categories.AnyAsync(x => x.Name.ToLower() == categoryRequest.Name.ToLower()))
         {
             return ServiceResult<Category>.Failure("Category already exists.");
         }
@@ -53,8 +53,7 @@ public class CategoryService(DataContext dataContext)
 
     public async Task<ServiceResult<object>> DeleteCategoryAsync(string categoryName)
     {
-        if (await dataContext.Products.AnyAsync(x =>
-                x.CategoryName.Equals(categoryName, StringComparison.CurrentCultureIgnoreCase)))
+        if (await dataContext.Products.AnyAsync(x => x.CategoryName.ToLower() == categoryName.ToLower()))
         {
             return ServiceResult<object>.Failure("Category contains products!");
         }
