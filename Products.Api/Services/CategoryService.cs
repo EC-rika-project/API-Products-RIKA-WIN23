@@ -39,8 +39,6 @@ public class CategoryService(DataContext dataContext)
         }
         catch (Exception)
         {
-
-            // Hantera andra databasfel med ett generellt felmeddelande
             return ServiceResult<Category>.Failure("An unexpected error occured");
         }
 
@@ -51,5 +49,24 @@ public class CategoryService(DataContext dataContext)
         };
 
         return ServiceResult<Category>.Success(createdCategory);
+    }
+
+    public async Task<ServiceResult<object>> DeleteCategoryAsync(string categoryName)
+    {
+        if (await dataContext.Products.AnyAsync(x =>
+                x.CategoryName.Equals(categoryName, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            return ServiceResult<object>.Failure("Category contains products!");
+        }
+        var category = await dataContext.Categories.FirstOrDefaultAsync(x => x.Name.Equals(categoryName, StringComparison.CurrentCultureIgnoreCase));
+
+        if (category == null)
+        {
+            return ServiceResult<object>.Failure("Category does not exist!");
+        }
+        
+        dataContext.Categories.Remove(category);
+        await dataContext.SaveChangesAsync();
+        return ServiceResult<object>.Success("Category deleted!");
     }
 }

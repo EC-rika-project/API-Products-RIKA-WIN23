@@ -150,4 +150,85 @@ public class CategoryServiceTests
         Assert.False(result.IsSuccess);
         Assert.Equal("Category already exists.", result.ErrorMessage);
     }
+    
+    [Fact]
+    public async Task DeleteCategoryAsync_ReturnsFailure_WhenCategoryContainsProducts()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<DataContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        await using var context = new DataContext(options);
+        
+        context.Products.Add(new ProductEntity
+        {
+            CategoryName = "ExistingCategory",
+            ArticleNumber = "shoes",
+            Name = "Nike Air Force",
+            Description = "Sexy shoes",
+            Price = 0,
+            Color = "white",
+            CoverImageUrl = "null",
+            Ingress = "White nike shoes",
+
+        });
+        await context.SaveChangesAsync();
+
+        var service = new CategoryService(context);
+
+        // Act
+        var result = await service.DeleteCategoryAsync("ExistingCategory");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Category contains products!", result.ErrorMessage);
+    }
+    
+    [Fact]
+    public async Task DeleteCategoryAsync_ReturnsFailure_WhenCategoryDoesNotExist()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<DataContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        await using var context = new DataContext(options);
+        var service = new CategoryService(context);
+
+        // Act
+        var result = await service.DeleteCategoryAsync("NonExistentCategory");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Category does not exist!", result.ErrorMessage);
+    }
+    
+    [Fact]
+    public async Task DeleteCategoryAsync_ReturnsSuccess_WhenCategoryIsDeleted()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<DataContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        await using var context = new DataContext(options);
+        
+        var category = new CategoryEntity { Name = "DeletableCategory", Description = "All kind of shoes"};
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var service = new CategoryService(context);
+
+        // Act
+        var result = await service.DeleteCategoryAsync("DeletableCategory");
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        
+        var deletedCategory = await context.Categories
+            .FirstOrDefaultAsync(c => c.Name == "DeletableCategory");
+        Assert.Null(deletedCategory);
+    }
+
 }
