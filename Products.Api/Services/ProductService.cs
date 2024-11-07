@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Products.Api.DAL;
+using Products.Api.Entities;
 using Products.Api.Models;
+using Products.Api.Models.Requests;
 
 namespace Products.Api.Services;
 
@@ -64,5 +66,65 @@ public class ProductService(DataContext dataContext)
             productGroup.SelectMany(x => x.Products)
                 .Where(x => x.ArticleNumber != product.ArticleNumber)
                 .ToList()));
+    }
+
+    public async Task<ServiceResult<Product>> CreateProductAsync(ProductRequest productRequest)
+    {
+        if (await dataContext.Products.AnyAsync(x => x.ArticleNumber.ToLower() == productRequest.ArticleNumber.ToLower()))
+        {
+            return ServiceResult<Product>.Failure("Product already exists");
+        }
+
+        var productGroup =
+            await dataContext.ProductGroups.FirstOrDefaultAsync(x => x.Id == productRequest.ProductGroupId);
+
+        if (productGroup == null)
+        {
+            productGroup = new ProductGroupEntity(){Id = Guid.NewGuid()};
+            dataContext.ProductGroups.Add(productGroup);
+            await dataContext.SaveChangesAsync();
+        }
+        
+        var productEntity = new ProductEntity
+        {
+            ArticleNumber = productRequest.ArticleNumber,
+            ProductGroupId = productGroup.Id,
+            Name = productRequest.Name,
+            Description = productRequest.Description,
+            Price = 69,
+            Color = productRequest.Color,
+            CoverImageUrl = productRequest.CoverImageUrl,
+            Ingress = productRequest.Ingress,
+            Variations = productRequest.ProductVariations.Select(x => new ProductVariationEntity
+            {
+                Id = Guid.NewGuid(),
+                ProductArticleNumber = productRequest.ArticleNumber,
+                Name = x.Name,
+                Stock = x.Stock,
+            }).ToList(),
+            CategoryName = productRequest.CategoryName,
+        };
+
+        
+        try
+        {
+            dataContext.Products.Add(productEntity);
+            await dataContext.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            return ServiceResult<Product>.Failure("Could not save product");
+            
+        }
+        
+        return ServiceResult<Product>.Success(new Product
+        {
+            CoverImageUrl = productEntity.CoverImageUrl,
+            ArticleNumber = productEntity.ArticleNumber,
+            Name = productEntity.Name,
+            Ingress = productEntity.Ingress,
+            Price = productEntity.Price,
+
+        });
     }
 }

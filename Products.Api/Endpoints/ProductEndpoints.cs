@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Products.Api.Models.Requests;
 using Products.Api.Services;
 
 namespace Products.Api.Endpoints;
@@ -17,6 +18,17 @@ public static class ProductEndpoints
         {
             var result = await productService.GetProductDetailAsync(articleNumber);
             return result.IsSuccess ? Results.Ok(result.Data) : Results.NotFound(result.ErrorMessage);
+        });
+        
+        builder.MapPost("/products", async (ProductRequest productRequest, ProductService productService) =>
+        {
+            
+            var result = await productService.CreateProductAsync(productRequest);
+            if (result.IsSuccess)
+            {
+                return Results.Created($"/products/{result.Data.Name}", result.Data);
+            }
+            return Results.BadRequest(result.ErrorMessage);
         });
 
         return builder;

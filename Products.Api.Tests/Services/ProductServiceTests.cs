@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Products.Api.DAL;
 using Products.Api.Entities;
+using Products.Api.Models.Requests;
 using Products.Api.Services;
 
 namespace Products.Api.Tests.Services;
@@ -131,5 +132,148 @@ public class ProductServiceTests
             // Assert
             Assert.False(result.IsSuccess);
             Assert.Equal("Product not found", result.ErrorMessage);
+        }
+        
+        [Fact]
+        public async Task CreateProductAsync_ReturnsFailure_WhenProductAlreadyExists()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<DataContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+
+            await using var context = new DataContext(options);
+
+            context.Products.Add(new ProductEntity
+            {
+                ArticleNumber = "1234",
+                ProductGroupId = default,
+                ProductGroup = null,
+                Name = "Existing Product",
+                Description = "Product Description",
+                Price = 10,
+                Color = "Red",
+                CoverImageUrl = "https://hans-tommy.com/image.jpg",
+                Ingress = "Short description",
+                CategoryName = "Shoes"
+ 
+
+            });
+            await context.SaveChangesAsync();
+
+            var service = new ProductService(context);
+            var productRequest = new ProductRequest { ArticleNumber = "1234", Name = "New Product" };
+
+            // Act
+            var result = await service.CreateProductAsync(productRequest);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal("Product already exists", result.ErrorMessage);
+        }
+        
+        [Fact]
+        public async Task CreateProductAsync_ReturnsSuccess_WhenProductIsCreated()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<DataContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+
+            await using var context = new DataContext(options);
+            var service = new ProductService(context);
+
+            var productRequest = new ProductRequest
+            {
+                ArticleNumber = "1234",
+                Name = "New Product",
+                Description = "Product Description",
+                ProductGroupId = Guid.NewGuid(),
+                Color = "Red",
+                CoverImageUrl = "https://hans-tommy.com/image.jpg",
+                Ingress = "Short description",
+                Price = 34+35,
+                CategoryName = "Shoes",
+                ProductVariations = new List<ProductVariationRequest>
+                {
+                    new() { Name = "Size M", Stock = 10 }
+                }
+            };
+
+            // Act
+            var result = await service.CreateProductAsync(productRequest);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.Equal("1234", result.Data.ArticleNumber);
+            Assert.Equal("New Product", result.Data.Name);
+            Assert.Equal("Short description", result.Data.Ingress);
+            Assert.Equal(69, result.Data.Price);
+            Assert.Equal("https://hans-tommy.com/image.jpg", result.Data.CoverImageUrl);
+        }
+        
+        [Fact]
+        public async Task CreateProductAsync_ReturnsSuccess_WhenProductGroupNotFound()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<DataContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+
+            await using var context = new DataContext(options);
+            var service = new ProductService(context);
+
+            var productRequest = new ProductRequest
+            {
+                ArticleNumber = "1234",
+                Name = "Product Without Group",
+                CoverImageUrl = "https://hans-tommy.com/image.jpg",
+                Description = "Description",
+                Price = 0,
+                Color = "Red",
+                Ingress = "Short Description",
+                CategoryName = "Shoes",
+                ProductGroupId = Guid.NewGuid()
+            };
+
+            // Act
+            var result = await service.CreateProductAsync(productRequest);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            var createdGroup = await context.ProductGroups.ToListAsync();
+            Assert.NotEmpty(createdGroup);
+        }
+        
+        [Fact]
+        public async Task CreateProductAsync_ReturnsSuccess_WhenProductGroupId_NotIncluded()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<DataContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+
+            await using var context = new DataContext(options);
+            var service = new ProductService(context);
+
+            var productRequest = new ProductRequest
+            {
+                CoverImageUrl = "https://hans-tommy.com/image.jpg",
+                ArticleNumber = "1234",
+                Name = "Product Without Group",
+                Description = "Description",
+                Price = 0,
+                Color = "Red",
+                Ingress = "Short Description",
+                CategoryName = "Shoes"
+            };
+
+            // Act
+            var result = await service.CreateProductAsync(productRequest);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            var createdGroup = await context.ProductGroups.ToListAsync();
+            Assert.NotEmpty(createdGroup);
         }
 } 
