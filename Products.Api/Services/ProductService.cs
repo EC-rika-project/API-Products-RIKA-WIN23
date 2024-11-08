@@ -38,6 +38,8 @@ public class ProductService(DataContext dataContext)
                         Name = x.Name,
                         Ingress = x.Ingress,
                         Price = x.Price
+                        Price = x.Price,
+                        ProductGroupId = x.ProductGroupId
                     })
                 ],
                 Page = page,
@@ -91,7 +93,7 @@ public class ProductService(DataContext dataContext)
             ProductGroupId = productGroup.Id,
             Name = productRequest.Name,
             Description = productRequest.Description,
-            Price = 69,
+            Price = productRequest.Price,
             Color = productRequest.Color,
             CoverImageUrl = productRequest.CoverImageUrl,
             Ingress = productRequest.Ingress,
@@ -124,7 +126,7 @@ public class ProductService(DataContext dataContext)
             Name = productEntity.Name,
             Ingress = productEntity.Ingress,
             Price = productEntity.Price,
-
+            ProductGroupId = productEntity.ProductGroupId
         });
     }
 }
