@@ -115,7 +115,6 @@ public class ProductService(DataContext dataContext)
         catch (Exception e)
         {
             return ServiceResult<Product>.Failure("Could not save product");
-            
         }
         
         return ServiceResult<Product>.Success(new Product
@@ -127,5 +126,22 @@ public class ProductService(DataContext dataContext)
             Price = productEntity.Price,
             ProductGroupId = productEntity.ProductGroupId
         });
+    }
+    
+    public async Task<ServiceResult<object>> DeleteProductAsync(string articleNumber)
+    {
+        
+        var product = await dataContext.Products
+            .Include(p =>p.Variations)
+            .FirstOrDefaultAsync(x => x.ArticleNumber == articleNumber);
+
+        if (product == null)
+        {
+            return ServiceResult<object>.Failure("Product does not exist!");
+        }
+        
+        dataContext.Products.Remove(product);
+        await dataContext.SaveChangesAsync();
+        return ServiceResult<object>.Success($"Product with article number: {articleNumber} has been deleted!");
     }
 }
