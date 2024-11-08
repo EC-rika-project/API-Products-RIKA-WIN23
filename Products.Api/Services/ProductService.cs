@@ -37,7 +37,6 @@ public class ProductService(DataContext dataContext)
                         ArticleNumber = x.ArticleNumber,
                         Name = x.Name,
                         Ingress = x.Ingress,
-                        Price = x.Price
                         Price = x.Price,
                         ProductGroupId = x.ProductGroupId
                     })
