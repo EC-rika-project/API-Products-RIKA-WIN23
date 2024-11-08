@@ -31,6 +31,16 @@ public static class ProductEndpoints
             return Results.BadRequest(result.ErrorMessage);
         });
 
+        builder.MapDelete("/products/{articleNumber}", async (string articleNumber, ProductService productService) =>
+        {
+            var result = await productService.DeleteProductAsync(articleNumber);
+            if (result.IsSuccess)
+            {
+                return Results.Ok(new { message = result.Data });
+            }
+            return Results.BadRequest(result.ErrorMessage);
+        });
+        
         return builder;
     }
 }
