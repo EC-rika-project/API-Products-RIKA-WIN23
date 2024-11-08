@@ -7,4 +7,5 @@ public class Product
     public string Name { get; set; } = null!;
     public string Ingress { get; set; } = null!;
     public decimal Price { get; set; }
+    public Guid ProductGroupId { get; set; }
 }
