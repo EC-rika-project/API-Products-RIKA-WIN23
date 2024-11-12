@@ -25,11 +25,11 @@ builder.Services.AddDbContext<DataContext>(x =>
 
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<ProductService>();
-builder.Services.AddCors(x => { x.AddPolicy("localhostwebapp", p =>
+builder.Services.AddCors(x => { x.AddPolicy("webapp", p =>
     {
         p.AllowCredentials();
         p.AllowAnyHeader();
-        p.WithOrigins("https://localhost:7278", "http://localhost:5229");
+        p.WithOrigins("https://localhost:7278", "http://localhost:5229", "https://rika-webapp.azurewebsites.net");
     }); 
 });
 
@@ -48,7 +48,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors("localhostwebapp");
+app.UseCors("webapp");
 app.MapCategoryEndpoints();
 app.MapProductEndpoints();
 
